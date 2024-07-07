@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ASA Dino Color Region Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
+    <style>
+      body {
+        font-family: 'Trebuchet MS', sans-serif;
+        background: url('background.png') no-repeat center center fixed;
+        background-size: cover;
+        background-color: rgba(0, 0, 0, 0.8);
+        /* Darken the background more for contrast */
+        background-blend-mode: darken;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .bold-text {
+        font-weight: bold;
+      }
+
+      .container {
+        background-color: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 800px;
+        width: 100%;
+        margin: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        /* Add a subtle shadow */
+      }
+
+      h1 {
+        text-align: center;
+        font-size: 2.5em;
+        color: #FFD700;
+        text-shadow: 2px 2px 5px #000;
+        margin-top: 20px;
+      }
+
+      .dino-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .dino-entry {
+        margin-bottom: 10px;
+        border: 1px solid #444;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: rgba(50, 50, 50, 0.9);
+        /* Darker background for entries */
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        /* Subtle shadow for entries */
+      }
+
+      .dino-entry h3 {
+        margin-top: 0;
+        color: #FFD700;
+      }
+
+      .color-regions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .color-region {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .disabled-region {
+        color: #999;
+      }
+
+      /* Dropdown styling */
+      .color-dropdown option {
+        padding: 5px;
+      }
+
+      .color-dropdown option:hover {
+        color: var(--hover-text-color) !important;
+        background-color: var(--hover-background-color) !important;
+      }
+
+      button {
+        background-color: #32CD32;
+        color: #000;
+        /* Black text for other buttons */
+        border: none;
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        font-weight: bold;
+        /* Bold text for other buttons */
+        text-transform: uppercase;
+        /* Modern uppercase text */
+        letter-spacing: 1px;
+        /* Add spacing between letters */
+      }
+
+      button:hover {
+        background-color: #228B22;
+      }
+
+      .toggle-button {
+        background-color: #0000ff;
+        /* Blue when enabled */
+        color: #fff;
+        /* White text */
+        padding: 5px 10px;
+        /* Slim styling */
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-transform: uppercase;
+        /* Modern uppercase text */
+        letter-spacing: 1px;
+        /* Add spacing between letters */
+      }
+
+      .toggle-button.disabled {
+        background-color: #ff0000;
+        /* Red when disabled */
+      }
+
+      #results {
+        background-color: rgba(50, 50, 50, 0.9);
+        /* Darker background for results */
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        width: 100%;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        /* Add a subtle shadow */
+      }
+
+      input[type="text"],
+      select {
+        border: 1px solid #444;
+        padding: 10px;
+        /* More padding for a modern look */
+        border-radius: 5px;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: rgba(255, 255, 255, 0.1);
+        /* Slightly transparent input background */
+        color: #fff;
+        /* White text for inputs */
+      }
+
+      input[type="text"]::placeholder {
+        color: #ccc;
+        /* Placeholder text color */
+      }
+
+      select {
+        background-color: rgba(255, 255, 255, 0.1);
+        /* Slightly transparent select background */
+        color: #fff;
+        /* White text for selects */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ASA Dino Color Region Tracker</h1>
+    <form id="dino-form" class="dino-form">
+      <button type="button" id="add-dino">Add Dino</button>
+    </form>
+    <button type="button" id="check-colors">Check Colors</button>
+    <button type="button" id="save-data">Save Data</button>
+    <button type="button" id="load-data">Load Data</button>
+    <button type="button" id="clear-data">Clear Data</button>
+    <div id="results"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+      const colorHexCodes = {
+        "Red": "#ff0000",
+        "Blue": "#0000ff",
+        "Green": "#00ff00",
+        "Yellow": "#ffff00",
+        "Black": "#000000",
+        "White": "#ffffff",
+        "Orange": "#ffa500",
+        "Purple": "#800080",
+        "Cyan": "#00ffff",
+        "Magenta": "#ff00ff",
+        "LightGreen": "#90ee90",
+        "LightGrey": "#d3d3d3",
+        "LightBrown": "#a52a2a",
+        "LightOrange": "#ffa07a",
+        "LightYellow": "#ffffe0",
+        "LightRed": "#ffcccb",
+        "DarkGrey": "#a9a9a9",
+        "DarkGreen": "#006400",
+        "DarkRed": "#8b0000",
+        "DinoLightRed": "#f73c3c",
+        "DinoDarkRed": "#7e0000",
+        "DinoLightOrange": "#ffae42",
+        "DinoDarkOrange": "#c67200",
+        "DinoLightYellow": "#fffd98",
+        "DinoDarkYellow": "#c6b400",
+        "DinoLightGreen": "#8cff8a",
+        "DinoMediumGreen": "#799479",
+        "DinoDarkGreen": "#224122",
+        "DinoLightBlue": "#d9e0ff",
+        "DinoDarkBlue": "#394263",
+        "DinoLightPurple": "#e4d9ff",
+        "DinoDarkPurple": "#403459",
+        "DinoLightBrown": "#ffe0ba",
+        "DinoMediumBrown": "#948575",
+        "DinoDarkBrown": "#594e41",
+        "DinoDarkerGrey": "#595959",
+        "DinoAlbino": "#ffffff",
+        "BigFoot0": "#b79683",
+        "BigFoot4": "#eadad5",
+        "BigFoot5": "#d0a794",
+        "WolfFur": "#c3b39f",
+        "DarkWolfFur": "#887666",
+        "DragonBase0": "#a0664b",
+        "DragonBase1": "#cb7956",
+        "DragonFire": "#bc4f00",
+        "DragonGreen0": "#79846c",
+        "DragonGreen1": "#909c79",
+        "DragonGreen2": "#a5a48b",
+        "DragonGreen3": "#74939c",
+        "WyvernPurple0": "#787496",
+        "WyvernPurple1": "#b0a2c0",
+        "WyvernBlue0": "#6281a7",
+        "WyvernBlue1": "#485c75",
+        "DinoMediumBlue": "#5fa4ea",
+        "DinoDeepBlue": "#4568d4",
+        "NearWhite": "#ededed",
+        "NearBlack": "#515151",
+        "DarkTurquoise": "#184546",
+        "MediumTurquoise": "#007060",
+        "Turquoise": "#00c5ab",
+        "GreenSlate": "#40594c",
+        "Sage": "#3e4f40",
+        "DarkWarmGray": "#3b3938",
+        "MediumWarmGray": "#585554",
+        "LightWarmGray": "#9b9290",
+        "DarkCement": "#525b56",
+        "LightCement": "#8aa196",
+        "LightPink": "#e8b0ff",
+        "DeepPink": "#ff119a",
+        "DarkViolet": "#730046",
+        "DarkMagenta": "#b70042",
+        "BurntSienna": "#7e331e",
+        "MediumAutumn": "#a93000",
+        "Vermillion": "#ef3100",
+        "Coral": "#ff5834",
+        "Orange": "#ff7f00",
+        "Peach": "#ffa73a",
+        "LightAutumn": "#ae7000",
+        "Mustard": "#949427",
+        "ActualBlack": "#171717",
+        "MidnightBlue": "#191d36",
+        "DarkBlue": "#151c2c",
+        "BlackSands": "#4b4b4b",
+        "LemonLime": "#e3ff00",
+        "Mint": "#98ff98",
+        "Jade": "#00a86b",
+        "PineGreen": "#01796f",
+        "SpruceGreen": "#0d4e3e",
+        "LeafGreen": "#2f4f2f",
+        "DarkLavender": "#734f96",
+        "MediumLavender": "#c99dbf",
+        "Lavender": "#e6e6fa",
+        "DarkTeal": "#014421",
+        "MediumTeal": "#4e8298",
+        "Teal": "#008080",
+        "PowderBlue": "#b0e0e6",
+        "Glacial": "#e0ffff",
+        "Cammo": "#78866b",
+        "DryMoss": "#8a9a5b",
+        "Custard": "#ffebcd",
+        "Cream": "#fffdd0"
+      };
+      const colors = Object.keys(colorHexCodes);
+      const dinoTypes = ["Achatina", "Allosaurus", "Anglerfish", "Ankylosaurus", "Araneo", "Archaeopteryx", "Argentavis", "Arthropluera", "Baryonyx", "Basilosaurus", "Beelzebufo", "Beetle", "Brontosaurus", "Carbonemys", "Carnotaurus", "Castoroides", "Ceratosaurus", "Chalicotherium", "Compy", "Daedon", "Dilo", "Dimetrodon", "Dimorphodon", "Diplocaulus", "Diplodocus", "Direbear", "Direwolf", "Dodo", "Doedicurus", "Dunkleosteus", "Electrophorus", "Equus", "Fasolasuchus", "Gallimimus", "Giganotosaurus", "Gigantopithecus", "Gigantoraptor", "Hesperornis", "Hyaenodon", "Ichthyornis", "Ichthyosaurus", "Iguanodon", "Jerboa", "Kairuku", "Kaprosuchus", "Lymantria", "Lystrosaurus", "Mammoth", "Manta", "Mantis", "Megalania", "Megaloceros", "Megalodon", "Megalosaurus", "Megatherium", "Mesopithecus", "Microraptor", "Morellatops", "Moschops", "Mosasaurus", "Onyc", "Otter", "Oviraptor", "Ovis", "Paracer", "Parasaur", "Pegomastax", "Pelagornis", "Phiomia", "Phoenix", "Plesiosaur", "Procoptodon", "Pteranodon", "Pulmonoscorpius", "Purlovia", "Pyromane", "Quetzal", "Raptor", "Rex", "Rock Golem", "Sabertooth", "Sarco", "Scorpion", "Spino", "Stegosaurus", "Tapajara", "Therizinosaur", "Thylacoleo", "Titanoboa", "Triceratops", "Troodon", "Tusoteuthis", "Vulture", "Fire Wyvern", "Lightning Wyvern", "Poison Wyvern", "Yutyrannus"];
+      $(document).ready(function() {
+        let dinoCount = 0;
+        $('#add-dino').click(function() {
+          addDinoEntry();
+        });
+        $('#check-colors').click(function() {
+          checkColors();
+        });
+        $('#save-data').click(function() {
+          saveData();
+        });
+        $('#load-data').click(function() {
+          loadData();
+        });
+        $('#clear-data').click(function() {
+          clearData();
+        });
+
+        function addDinoEntry(dinoData = {}) {
+          dinoCount++;
+          const dinoEntry = `
+        
+					
+					<div class="dino-entry" id="dino-${dinoCount}">
+						<h3>Dino ${dinoCount}</h3>
+						<label for="dino-type-${dinoCount}">Type: </label>
+						<select id="dino-type-${dinoCount}" name="dino-type-${dinoCount}">
+                ${dinoTypes.map(type => `
+							
+							<option value="${type}" ${dinoData.type === type ? 'selected' : ''}>${type}</option>`).join('')}
+            
+						
+						</select>
+						<br>
+							<label for="target-color-${dinoCount}">Target Color: </label>
+							<select id="target-color-${dinoCount}" name="target-color-${dinoCount}" class="color-dropdown">
+                ${colors.map(color => {
+                    const backgroundColor = colorHexCodes[color];
+                    const textColor = isDarkColor(backgroundColor) ? '#fff' : '#000';
+                    return `
+								
+								<option value="${color}" style="background-color: ${backgroundColor}; color: ${textColor}; --hover-text-color: ${textColor === '#fff' ? '#000' : '#fff'}; --hover-background-color: ${backgroundColor};">${color}</option>`;
+                }).join('')}
+            
+							
+							</select>
+							<div class="color-regions">
+                ${getColorRegions(dinoCount, dinoData.colorRegions || [])}
+            </div>
+							<button type="button" onclick="removeDinoEntry(${dinoCount})">Remove Dino</button>
+						</div>
+    `;
+          $('#dino-form').append(dinoEntry);
+        }
+
+        function isDarkColor(hex) {
+          // Convert hex to RGB
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          // Calculate luminance
+          const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          // Return true if the color is dark
+          return luminance < 128;
+        }
+
+        function getColorRegions(dinoId, savedRegions) {
+          let regions = '';
+          for (let i = 0; i < 6; i++) { // Start at 0
+            const isDisabled = savedRegions[i] === 'Disabled';
+            const isChecked = savedRegions[i] && savedRegions[i] !== 'None' && !isDisabled;
+            regions += `
+            
+						
+						<div class="color-region" id="region-container-${dinoId}-${i}">
+							<button type="button" id="toggle-region-${dinoId}-${i}" class="toggle-button ${isDisabled ? 'disabled' : ''}" onclick="toggleRegion(${dinoId}, ${i})">
+                    ${isDisabled ? 'Enable' : 'Disable'} Region ${i}
+                </button>
+							<br>
+								<input type="checkbox" id="region-${dinoId}-${i}" name="region-${dinoId}-${i}" ${isDisabled ? 'disabled' : ''} ${isChecked ? 'checked' : ''}>
+									<label for="region-${dinoId}-${i}">Target Color Obtained</label>
+								</div>
+        `;
+          }
+          return regions;
+        }
+        window.removeDinoEntry = function(dinoId) {
+          $(`#dino-${dinoId}`).remove();
+        };
+        window.toggleRegion = function(dinoId, regionId) {
+          const button = $(`#toggle-region-${dinoId}-${regionId}`);
+          const checkbox = $(`#region-${dinoId}-${regionId}`);
+          if (button.hasClass('disabled')) {
+            button.removeClass('disabled').text(`Disable Region ${regionId}`);
+            checkbox.prop('disabled', false).prop('checked', false); // Enable and uncheck the checkbox
+          } else {
+            button.addClass('disabled').text(`Enable Region ${regionId}`);
+            checkbox.prop('disabled', true).prop('checked', false); // Disable and uncheck the checkbox
+          }
+        };
+
+        function checkColors() {
+          const results = [];
+          $('.dino-entry').each(function() {
+            const dinoId = $(this).attr('id').split('-')[1];
+            const dinoType = $(`#dino-type-${dinoId}`).val();
+            const targetColor = $(`#target-color-${dinoId}`).val();
+            const dinoName = `${dinoType} (${targetColor})`;
+            const obtainedRegions = [];
+            const missingRegions = [];
+            for (let i = 0; i < 6; i++) {
+              const isDisabled = $(`#toggle-region-${dinoId}-${i}`).hasClass('disabled');
+              if (!isDisabled) {
+                const isChecked = $(`#region-${dinoId}-${i}`).is(':checked');
+                if (isChecked) {
+                  obtainedRegions.push(`R${i}: ${targetColor}`);
+                } else {
+                  missingRegions.push(`R${i}`);
+                }
+              }
+            }
+            results.push({
+              dinoName,
+              obtainedRegions,
+              missingRegions
+            });
+          });
+          displayResults(results);
+        }
+
+        function displayResults(results) {
+          let output = ' < h2 > Results < /h2> < ul > ';
+          results.forEach(result => {
+            output += `
+									<li class="bold-text">${result.dinoName}</li>`;
+            if (result.obtainedRegions.length > 0) {
+              output += `
+									<ul>
+										<li>
+											<span style="color: green;">&#10003;</span>
+											<b>Obtained:</b> ${result.obtainedRegions.join(', ')}
+										</li>
+									</ul>`;
+            }
+            if (result.missingRegions.length > 0) {
+              output += `
+									<ul>
+										<li>
+											<span style="color: red;">&#10007;</span>
+											<b>Missing:</b> ${result.missingRegions.join(', ')}
+										</li>
+									</ul>`;
+            }
+          });
+          output += ' < /ul>';
+          $('#results').html(output);
+        }
+
+        function saveData() {
+          const data = [];
+          $('.dino-entry').each(function() {
+            const dinoId = $(this).attr('id').split('-')[1];
+            const dinoType = $(`#dino-type-${dinoId}`).val();
+            const targetColor = $(`#target-color-${dinoId}`).val();
+            const colorRegions = [];
+            for (let i = 0; i < 6; i++) { // Start at 0
+              const isDisabled = $(`#toggle-region-${dinoId}-${i}`).hasClass('disabled');
+              if (!isDisabled) {
+                const isChecked = $(`#region-${dinoId}-${i}`).is(':checked');
+                colorRegions.push(isChecked ? targetColor : 'None');
+              } else {
+                colorRegions.push('Disabled');
+              }
+            }
+            data.push({
+              type: dinoType,
+              targetColor,
+              colorRegions
+            });
+          });
+          localStorage.setItem('dinoData', JSON.stringify(data));
+          alert('Data saved successfully!');
+        }
+
+        function loadData() {
+          const data = JSON.parse(localStorage.getItem('dinoData')) || [];
+          data.forEach(dinoData => addDinoEntry(dinoData));
+        }
+
+        function clearData() {
+          localStorage.removeItem('dinoData');
+          alert('Data cleared successfully!');
+          location.reload(); // Reload the page to reflect the changes
+        }
+        loadData(); // Load data on page load
+      });
+    </script>
+  </body>
+</html>
