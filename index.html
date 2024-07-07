@@ -476,7 +476,7 @@
         }
 
         function displayResults(results) {
-          let output = ' < h2 > Results < /h2>< ul > ';
+          let output = ' <h2> Results </h2><ul> ';
           results.forEach(result => {
             output += `
 									
@@ -504,7 +504,7 @@
 								</ul>`;
             }
           });
-          output += ' < /ul>';
+          output += ' </ul>';
           $('#results').html(output);
         }
 
