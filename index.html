@@ -173,6 +173,10 @@
         /* White text for selects */
       }
 
+      select.dino-type-dropdown {
+ 	color: #000; /* Black text */
+      }
+
       footer {
     	background-color: rgba(0, 0, 0, 0.9); /* Match the container background */
     	color: #FFD700; /* Gold color for text */
@@ -330,7 +334,7 @@
 					<div class="dino-entry" id="dino-${dinoCount}">
 						<h3>Dino ${dinoCount}</h3>
 						<label for="dino-type-${dinoCount}">Type: </label>
-						<select id="dino-type-${dinoCount}" name="dino-type-${dinoCount}">
+						<select id="dino-type-${dinoCount}" name="dino-type-${dinoCount}" class="dino-type-dropdown">
                 ${dinoTypes.map(type => `
 							
 							<option value="${type}" ${dinoData.type === type ? 'selected' : ''}>${type}</option>`).join('')}
