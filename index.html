@@ -173,24 +173,46 @@
         /* White text for selects */
       }
 
-      select.dino-type-dropdown {
- 	color: #fff; /* White text */
+      .dino-type-dropdown {
+        color: #fff;
+        /* White text for selected option */
+        background-color: #000;
+        /* Black background for selected option */
       }
 
-      option.dino-type-dropdown {
-	color: #000; /* Black text */
+      .dino-type-dropdown option {
+        color: #000;
+        /* Black text */
+        background-color: #fff;
+        /* White background */
+      }
+
+      .dino-type-dropdown option:hover {
+        background-color: #ccc;
+        /* Light grey background on hover */
+      }
+
+      .dino-type-dropdown option:checked {
+        color: #fff;
+        /* White text for selected option */
+        background-color: #000;
+        /* Black background for selected option */
       }
 
       footer {
-    	background-color: rgba(0, 0, 0, 0.9); /* Match the container background */
-    	color: #FFD700; /* Gold color for text */
-    	text-align: center;
-    	padding: 10px;
-    	position: absolute;
-    	bottom: 0;
-    	width: 100%;
-    	box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5); /* Add a subtle shadow */
-    	font-size: 0.9em; /* Slightly smaller text size */
+        background-color: rgba(0, 0, 0, 0.9);
+        /* Match the container background */
+        color: #FFD700;
+        /* Gold color for text */
+        text-align: center;
+        padding: 10px;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+        /* Add a subtle shadow */
+        font-size: 0.9em;
+        /* Slightly smaller text size */
       }
     </style>
   </head>
@@ -334,16 +356,13 @@
           dinoCount++;
           const dinoEntry = `
         
-					
 					<div class="dino-entry" id="dino-${dinoCount}">
 						<h3>Dino ${dinoCount}</h3>
 						<label for="dino-type-${dinoCount}">Type: </label>
-						<select id="dino-type-${dinoCount}" name="dino-type-${dinoCount}" class="dino-type-dropdown">
+						<select id="dino-type-${dinoCount}" name="dino-type-${dinoCount}" class="dino-type-dropdown" onchange="updateDropdownStyles(${dinoCount})">
                 ${dinoTypes.map(type => `
-							
 							<option value="${type}" ${dinoData.type === type ? 'selected' : ''}>${type}</option>`).join('')}
             
-						
 						</select>
 						<br>
 							<label for="target-color-${dinoCount}">Target Color: </label>
@@ -352,11 +371,9 @@
                     const backgroundColor = colorHexCodes[color];
                     const textColor = isDarkColor(backgroundColor) ? '#fff' : '#000';
                     return `
-								
 								<option value="${color}" style="background-color: ${backgroundColor}; color: ${textColor}; --hover-text-color: ${textColor === '#fff' ? '#000' : '#fff'}; --hover-background-color: ${backgroundColor};">${color}</option>`;
                 }).join('')}
             
-							
 							</select>
 							<div class="color-regions">
                 ${getColorRegions(dinoCount, dinoData.colorRegions || [])}
@@ -365,6 +382,21 @@
 						</div>
     `;
           $('#dino-form').append(dinoEntry);
+          updateDropdownStyles(dinoCount); // Ensure initial style
+        }
+
+        function updateDropdownStyles(dinoId) {
+          const selectElement = document.getElementById(`dino-type-${dinoId}`);
+          const options = selectElement.options;
+          for (let i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+              options[i].style.color = 'white';
+              options[i].style.backgroundColor = 'black';
+            } else {
+              options[i].style.color = 'black';
+              options[i].style.backgroundColor = 'white';
+            }
+          }
         }
 
         function isDarkColor(hex) {
@@ -385,6 +417,7 @@
             const isChecked = savedRegions[i] && savedRegions[i] !== 'None' && !isDisabled;
             regions += `
             
+						
 						
 						<div class="color-region" id="region-container-${dinoId}-${i}">
 							<button type="button" id="toggle-region-${dinoId}-${i}" class="toggle-button ${isDisabled ? 'disabled' : ''}" onclick="toggleRegion(${dinoId}, ${i})">
@@ -443,27 +476,32 @@
         }
 
         function displayResults(results) {
-          let output = ' < h2 > Results < /h2> < ul > ';
+          let output = ' < h2 > Results < /h2>< ul > ';
           results.forEach(result => {
             output += `
-									<li class="bold-text">${result.dinoName}</li>`;
+									
+								<li class="bold-text">${result.dinoName}</li>`;
             if (result.obtainedRegions.length > 0) {
               output += `
-									<ul>
-										<li>
-											<span style="color: green;">&#10003;</span>
-											<b>Obtained:</b> ${result.obtainedRegions.join(', ')}
-										</li>
-									</ul>`;
+									
+								<ul>
+									<li>
+										<span style="color: green;">&#10003;</span>
+										<b>Obtained:</b> ${result.obtainedRegions.join(', ')}
+										
+									</li>
+								</ul>`;
             }
             if (result.missingRegions.length > 0) {
               output += `
-									<ul>
-										<li>
-											<span style="color: red;">&#10007;</span>
-											<b>Missing:</b> ${result.missingRegions.join(', ')}
-										</li>
-									</ul>`;
+									
+								<ul>
+									<li>
+										<span style="color: red;">&#10007;</span>
+										<b>Missing:</b> ${result.missingRegions.join(', ')}
+										
+									</li>
+								</ul>`;
             }
           });
           output += ' < /ul>';
@@ -509,8 +547,8 @@
         loadData(); // Load data on page load
       });
     </script>
-	 <footer>
-    		<p>Copyright &copy; 2024 metalios.dev</p>
-	</footer>
+    <footer>
+      <p>Copyright &copy; 2024 metalios.dev</p>
+    </footer>
   </body>
 </html>
