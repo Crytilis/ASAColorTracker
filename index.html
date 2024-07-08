@@ -367,11 +367,11 @@
 						<br>
 							<label for="target-color-${dinoCount}">Target Color: </label>
 							<select id="target-color-${dinoCount}" name="target-color-${dinoCount}" class="color-dropdown">
-                ${colors.map(color => {
+                ${colors.map((color, index) => {
                     const backgroundColor = colorHexCodes[color];
                     const textColor = isDarkColor(backgroundColor) ? '#fff' : '#000';
                     return `
-								<option value="${color}" style="background-color: ${backgroundColor}; color: ${textColor}; --hover-text-color: ${textColor === '#fff' ? '#000' : '#fff'}; --hover-background-color: ${backgroundColor};">${color}</option>`;
+								<option value="${color}" style="background-color: ${backgroundColor}; color: (${index}) ${textColor}; --hover-text-color: ${textColor === '#fff' ? '#000' : '#fff'}; --hover-background-color: ${backgroundColor};">${color}</option>`;
                 }).join('')}
             
 							</select>
