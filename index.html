@@ -481,17 +481,6 @@
             output += `
 									
 								<li class="bold-text">${result.dinoName}</li>`;
-            if (result.obtainedRegions.length > 0) {
-              output += `
-									
-								<ul>
-									<li>
-										<span style="color: green;">&#10003;</span>
-										<b>Obtained:</b> ${result.obtainedRegions.join(', ')}
-										
-									</li>
-								</ul>`;
-            }
             if (result.missingRegions.length > 0) {
               output += `
 									
